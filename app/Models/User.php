@@ -62,4 +62,12 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * @param hasMany Article
+     */
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
 }

@@ -1,10 +1,9 @@
 <?php
 
-// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\TestController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\ArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,5 +23,9 @@ Route::resource('users', UserController::class, [
 Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware(['require.user.api'])->group(function () {
-    Route::get('test', [TestController::class, "test1"]);
+
+    Route::resource('articles', ArticleController::class, [
+        'only' => ['index', 'store', 'edit', 'delete']
+    ]);
+    // Route::get('test', [TestController::class, "test1"]);
 });

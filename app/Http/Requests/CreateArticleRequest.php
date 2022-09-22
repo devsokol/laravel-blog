@@ -5,11 +5,11 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rules\Password;
 
-class CreateUserRequest extends FormRequest
+class CreateArticleRequest extends FormRequest
 {
     /**
+     * Determine if the user is authorized to make this request.
      *
      * @return bool
      */
@@ -26,27 +26,9 @@ class CreateUserRequest extends FormRequest
     public function rules()
     {
         return [
-            'email' => 'required|email|unique:users',
-            'name' => 'required|string|max:50',
-            'password' => ['required', Password::min(8)
-                    ->numbers()
-                    ->symbols()
-                    ->mixedCase()
-            ]
-        ];
-    }
-
-    /**
-     * Custom message for validation
-     *
-     * @return array
-     */
-    public function messages()
-    {
-        return [
-            'email.required' => 'Email is required!',
-            'name.required' => 'Name is required!',
-            'password.required' => 'Password is required!'
+            'title' => 'required|string|:max:50',
+            'description' => 'required|string|max:500',
+            'category_id' => 'exists:App\Models\Category,id'
         ];
     }
 

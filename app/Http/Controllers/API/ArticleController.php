@@ -4,11 +4,12 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\CreateArticleRequest;
+use App\Models\Article;
+use App\Models\Category;
+use App\Models\Vote;
 
-class UserController extends Controller
+class ArticleController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,29 +18,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        return response()->json(
-            User::all()
-        );
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(CreateUserRequest $request)
-    {
-        $validatedDate = $request->validated();
-
-        $hashPassword = Hash::make($validatedDate['password']);
-        unset($validatedDate['password']);
-
-        $user = User::create(array_merge($validatedDate, [
-            'password' => $hashPassword
-        ]));
-
-        return response()->json($user);
+        //
     }
 
     /**
@@ -50,6 +29,35 @@ class UserController extends Controller
     public function create()
     {
         //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(CreateArticleRequest $request)
+    {
+        dd(1);
+        try {
+            $validatedDate = $request->validated();
+
+            $article = new Article;
+
+            $article->title = $validatedDate['title'];
+            $article->description = $validatedDate['description'];
+            $article->category_id = $validatedDate['category_id'];
+            $article->user_id = $request->user('api')->id;
+
+            $article->save();
+
+            dd($article);
+
+         } catch(\Exception $e) {
+            // do task when error
+            // echo $e->getMessage();   // insert query
+         }
     }
 
     /**
