@@ -5,11 +5,11 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rules\Password;
 
-class CreateArticleRequest extends FormRequest
+class CreateVote extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
      *
      * @return bool
      */
@@ -26,11 +26,10 @@ class CreateArticleRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|string|max:50',
-            'description' => 'required|string|max:500',
-            'category_id' => 'exists:App\Models\Category,id'
+            'status' => 'required|boolean'
         ];
     }
+
 
     /**
      * @return HttpResponseException

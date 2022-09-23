@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\CreateArticleRequest;
+use App\Http\Requests\UpdateArticleRequest;
+use App\Http\Requests\CreateVote;
 use App\Models\Article;
-use App\Models\Category;
 use App\Models\Vote;
+use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
@@ -16,19 +17,12 @@ class ArticleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'articles' => Article::where('user_id', $request->user('api')->id)
+                ->count()
+        ]);
     }
 
     /**
@@ -39,10 +33,9 @@ class ArticleController extends Controller
      */
     public function store(CreateArticleRequest $request)
     {
-        dd(1);
-        try {
-            $validatedDate = $request->validated();
+        $validatedDate = $request->validated();
 
+        try {
             $article = new Article;
 
             $article->title = $validatedDate['title'];
@@ -51,13 +44,105 @@ class ArticleController extends Controller
             $article->user_id = $request->user('api')->id;
 
             $article->save();
+        } catch(\Exception $e) {
+            return $this->responseServerError($e);
+        }
 
-            dd($article);
+        return response()->json($article);
+    }
 
-         } catch(\Exception $e) {
-            // do task when error
-            // echo $e->getMessage();   // insert query
-         }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(UpdateArticleRequest $request, $id)
+    {
+        $validatedDate = $request->validated();
+
+        try {
+            $article = Article::findOrFail($id);
+            $article->update($validatedDate);
+        } catch(\Exception $e) {
+            return $this->responseServerError($e);
+        }
+
+        return response()->json($article);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $article = Article::findOrFail($id);
+        $article->delete();
+
+        return response()->json($article);
+    }
+
+    /**
+     *
+     */
+    public function votes(CreateVote $request, $articleId)
+    {
+        $validatedDate = $request->validated();
+
+        $article = Article::findOrFail($articleId);
+
+        $vote = Vote::where('user_id', $request->user('api')->id)
+            ->where('article_id', $article->id)
+            ->first();
+
+        try {
+            if (!$vote) { // add
+                $newVote = new Vote;
+
+                $newVote->status = $validatedDate['status'];
+                $newVote->article_id = $article->id;
+                $newVote->user_id = $request->user('api')->id;
+
+                $newVote->save();
+
+                return response()->json($newVote);
+            } else { // update
+                $vote->update([
+                    'status' => $validatedDate['status']
+                ]);
+            }
+        } catch (\Exception $e) {
+            return $this->responseServerError($e);
+        }
+
+        return response()->json($vote);
+    }
+
+    /**
+     * @param String
+     * @param String
+     *
+     * @return Response 500
+     */
+    public function responseServerError($e, $responseMessage = 'The server is temporarily not responding')
+    {
+        \Log::debug($e->getMessage());
+
+        return response()->json(['message' => $responseMessage], 500);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
     }
 
     /**
@@ -78,29 +163,6 @@ class ArticleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
     {
         //
     }

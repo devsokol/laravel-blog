@@ -9,6 +9,8 @@ class Article extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['title', 'description', 'category_id'];
+
     /**
      * @return belongsTo Category
      */

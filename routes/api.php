@@ -16,16 +16,16 @@ use App\Http\Controllers\API\ArticleController;
 |
 */
 
+Route::middleware(['require.user.api'])->group(function () {
+    Route::resource('articles', ArticleController::class, [
+        'only' => ['index', 'store', 'update', 'destroy']
+    ]);
+    Route::post('votes/{articleId}', [ArticleController::class, 'votes']);
+});
+
+
 Route::resource('users', UserController::class, [
     'only' => ['index', 'store']
 ]);
 
 Route::post('login', [AuthController::class, 'login']);
-
-Route::middleware(['require.user.api'])->group(function () {
-
-    Route::resource('articles', ArticleController::class, [
-        'only' => ['index', 'store', 'edit', 'delete']
-    ]);
-    // Route::get('test', [TestController::class, "test1"]);
-});
