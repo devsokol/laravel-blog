@@ -5,9 +5,11 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateArticleRequest;
 use App\Http\Requests\UpdateArticleRequest;
+use App\Http\Requests\GetArticlesRequest;
 use App\Http\Requests\CreateVote;
 use App\Models\Article;
 use App\Models\Vote;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
@@ -87,7 +89,10 @@ class ArticleController extends Controller
     }
 
     /**
+     * @param CreateVote $request
+     * @param Integer $articleId
      *
+     * @return \Illuminate\Http\Response
      */
     public function votes(CreateVote $request, $articleId)
     {
@@ -120,6 +125,65 @@ class ArticleController extends Controller
         }
 
         return response()->json($vote);
+    }
+
+    /**
+     * @return GetArticlesRequest $request
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function allArticles(GetArticlesRequest $request)
+    {
+        $validatedDate = $request->validated();
+
+        try {
+            $articles = Article::query();
+
+            if ($validatedDate['title'] ?? false) {
+                $articles
+                    ->orWhere('title', 'like', '%' . $validatedDate['title'] . '%');
+            }
+
+            if ($validatedDate['description'] ?? false) {
+                $articles
+                    ->orWhere('description', 'like', '%' . $validatedDate['description'] . '%');
+            }
+
+            if ($validatedDate['category_id'] ?? false) {
+                $articles
+                    ->orWhere('category_id', $validatedDate['category_id']);
+            }
+
+            $articles = $articles
+                ->orderByDesc('created_at')
+                ->offset($validatedDate['offset'])
+                ->limit($validatedDate['limit'])
+                ->get();
+        } catch (\Exception $e) {
+            return $this->responseServerError($e);
+        }
+
+        return response()->json([
+            'count' => Article::count(),
+            'articles' => $articles
+        ]);
+    }
+
+    /**
+     * @return Response
+     */
+    public function getTopCategories() {
+        $minNumberArticles = 2;
+        $limit = 5;
+
+        $categories = Category::has('articles', '>=', $minNumberArticles)
+            ->with('articles')
+            ->withCount('articles')
+            ->limit($limit)
+            ->orderByDesc('articles_count')
+            ->get();
+
+        return response()->json($categories);
     }
 
     /**

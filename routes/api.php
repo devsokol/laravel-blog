@@ -29,3 +29,5 @@ Route::resource('users', UserController::class, [
 ]);
 
 Route::post('login', [AuthController::class, 'login']);
+Route::get('all-articles', [ArticleController::class, 'allArticles']);
+Route::get('top-categories', [ArticleController::class, 'getTopCategories']);
